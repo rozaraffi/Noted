@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aplikasi Catatan Pro</title>
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-light: #eff6ff;
+      --pin-color: #f59e0b;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --danger-light: #fef2f2;
+      --border-color: #e2e8f0;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+
+      /* Color Tags Base (Light Mode) */
+      --tag-default: #ffffff;
+      --tag-red: #fef2f2;
+      --tag-yellow: #fffbeb;
+      --tag-green: #f0fdf4;
+      --tag-blue: #eff6ff;
+      --tag-purple: #faf5ff;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --primary-light: rgba(59, 130, 246, 0.15);
+      --border-color: #334155;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+
+      /* Color Tags Base (Dark Mode) */
+      --tag-default: #1e293b;
+      --tag-red: #450a0a;
+      --tag-yellow: #451a03;
+      --tag-green: #052e16;
+      --tag-blue: #172554;
+      --tag-purple: #3b0764;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background-color 0.3s var(--ease-smooth), color 0.3s var(--ease-smooth);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      padding-bottom: 90px;
+    }
+
+    /* Header & Tools */
+    .app-header {
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-text h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+    }
+
+    .header-text p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-tool {
+      padding: 8px 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s var(--ease-smooth);
+    }
+
+    .btn-tool:hover {
+      background: var(--primary-light);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Search Bar & Toolbar */
+    .search-section {
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      background: var(--card-bg);
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s var(--ease-smooth);
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Filter Bar */
+    .filter-section {
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--card-bg);
+      padding: 12px 18px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .filter-label {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .chip {
+      padding: 6px 14px;
+      background: var(--bg-color);
+      color: var(--text-muted);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s var(--ease-spring);
+      border: 1px solid var(--border-color);
+      will-change: transform, background, color;
+    }
+
+    .chip:hover {
+      background: var(--border-color);
+      color: var(--text-main);
+      transform: translateY(-1px);
+    }
+
+    .chip.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+      transform: scale(1.03);
+    }
+
+    .btn-add-cat-filter {
+      padding: 6px 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px dashed var(--primary);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s var(--ease-smooth);
+    }
+
+    .btn-add-cat-filter:hover {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    /* Floating Action Button (+) */
+    .fab {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      width: 58px;
+      height: 58px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.35);
+      cursor: pointer;
+      border: none;
+      transition: transform 0.3s var(--ease-spring), box-shadow 0.3s ease;
+      z-index: 99;
+      will-change: transform;
+    }
+
+    .fab:hover {
+      transform: scale(1.12) rotate(90deg);
+      box-shadow: 0 14px 28px rgba(59, 130, 246, 0.45);
+    }
+
+    .fab:active {
+      transform: scale(0.95);
+    }
+
+    /* Base Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s var(--ease-smooth), visibility 0.25s var(--ease-smooth);
+      will-change: opacity, visibility;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      width: 92%;
+      max-width: 540px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transform: translateY(24px) scale(0.96);
+      transition: transform 0.3s var(--ease-spring);
+      border: 1px solid var(--border-color);
+      will-change: transform;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.3px;
+    }
+
+    .close-btn {
+      background: var(--bg-color);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s, transform 0.2s var(--ease-spring);
+    }
+
+    .close-btn:hover {
+      background: var(--border-color);
+      color: var(--text-main);
+      transform: scale(1.1);
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      outline: none;
+      font-size: 14px;
+      background: var(--bg-color);
+      color: var(--text-main);
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: var(--primary);
+      background: var(--card-bg);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    }
+
+    textarea.input-field {
+      resize: vertical;
+      min-height: 120px;
+      line-height: 1.5;
+    }
+
+    /* Text Formatting Toolbar */
+    .editor-toolbar {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-color);
+      padding: 6px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    .editor-btn {
+      padding: 6px 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .editor-btn:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* Color Selection Row */
+    .color-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .color-picker-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .color-options {
+      display: flex;
+      gap: 8px;
+    }
+
+    .color-circle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.2s var(--ease-spring);
+    }
+
+    .color-circle:hover {
+      transform: scale(1.2);
+    }
+
+    .color-circle.selected {
+      border-color: var(--primary);
+      transform: scale(1.15);
+    }
+
+    /* Word Counter */
+    .counter-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* Kategori Input Row & Custom Select */
+    .category-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .category-input-wrapper {
+      position: relative;
+      flex-grow: 1;
+    }
+
+    .custom-select-trigger {
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: var(--bg-color);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: var(--text-main);
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .custom-select-trigger:hover {
+      background: var(--card-bg);
+      border-color: #cbd5e1;
+    }
+
+    .custom-dropdown-menu {
+      position: absolute;
+      top: 108%;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 6px;
+      z-index: 20;
+      display: none;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .custom-dropdown-menu.show {
+      display: block;
+      animation: dropdownSlide 0.2s var(--ease-smooth);
+    }
+
+    @keyframes dropdownSlide {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dropdown-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      transition: background 0.15s;
+    }
+
+    .dropdown-item:hover {
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .btn-inline-add {
+      padding: 0 16px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      white-space: nowrap;
+      transition: all 0.2s var(--ease-smooth);
+    }
+
+    .btn-inline-add:hover {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .form-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s var(--ease-spring);
+      will-change: transform, box-shadow;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-danger:hover {
+      background: var(--danger-hover);
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+      background: var(--bg-color);
+      color: var(--text-muted);
+    }
+
+    .btn-cancel:hover {
+      background: var(--border-color);
+      color: var(--text-main);
+    }
+
+    /* Daftar Note & Animations */
+    .notes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .note-card {
+      background: var(--card-bg);
+      padding: 20px 24px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+      position: relative;
+      transition: transform 0.3s var(--ease-spring), box-shadow 0.3s var(--ease-smooth), opacity 0.3s ease, background-color 0.3s ease;
+      will-change: transform, opacity, box-shadow;
+      animation: noteAppear 0.35s var(--ease-spring) forwards;
+    }
+
+    /* Dynamic Card Color Themes */
+    .note-card.color-default { background: var(--tag-default); }
+    .note-card.color-red { background: var(--tag-red); }
+    .note-card.color-yellow { background: var(--tag-yellow); }
+    .note-card.color-green { background: var(--tag-green); }
+    .note-card.color-blue { background: var(--tag-blue); }
+    .note-card.color-purple { background: var(--tag-purple); }
+
+    @keyframes noteAppear {
+      from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .note-card.deleting {
+      opacity: 0;
+      transform: scale(0.9) translateY(-10px);
+    }
+
+    .note-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-3px);
+    }
+
+    .note-card.pinned {
+      border-left: 4px solid var(--pin-color);
+    }
+
+    .note-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .note-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
+
+    .category-badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .note-content {
+      font-size: 14px;
+      color: var(--text-main);
+      white-space: pre-wrap;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .note-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-color);
+      padding-top: 14px;
+    }
+
+    /* Action Buttons */
+    .note-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .action-btn {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s var(--ease-spring);
+      will-change: transform;
+    }
+
+    .action-btn:hover {
+      background: var(--border-color);
+      color: var(--text-main);
+      transform: translateY(-1px);
+    }
+
+    .action-btn:active {
+      transform: scale(0.94);
+    }
+
+    .action-btn.btn-edit:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .action-btn.btn-delete:hover {
+      background: var(--danger-light);
+      color: var(--danger);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .action-btn.pin-active {
+      background: #fffbe8;
+      color: var(--pin-color);
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    [data-theme="dark"] .action-btn.pin-active {
+      background: #451a03;
+    }
+
+    /* Toast Notification System */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: auto;
+      min-width: 260px;
+      padding: 14px 18px;
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+      border-left: 4px solid var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      animation: toastIn 0.35s var(--ease-spring) forwards;
+      will-change: transform, opacity;
+    }
+
+    .toast.toast-success { border-left-color: #10b981; }
+    .toast.toast-danger { border-left-color: var(--danger); }
+    .toast.toast-warning { border-left-color: var(--pin-color); }
+
+    .toast.hiding {
+      animation: toastOut 0.25s var(--ease-smooth) forwards;
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(50px) scale(0.9); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateX(0) scale(1); }
+      to { opacity: 0; transform: translateX(40px) scale(0.9); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Input File Tersembunyi untuk Import -->
+  <input type="file" id="import-file-input" accept=".json" style="display: none;" onchange="handleImportFile(event)" />
+
+  <div class="container">
+    <div class="app-header">
+      <div class="header-text">
+        <h1>Catatan Saya</h1>
+        <p>Kelola ide dan tugas harian secara rapi</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-tool" onclick="toggleDarkMode()" id="theme-btn" title="Ganti Tema">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="theme-icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+        <button class="btn-tool" onclick="exportData()" title="Export Catatan ke JSON">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Export
+        </button>
+        <button class="btn-tool" onclick="triggerImport()" title="Import Catatan dari JSON">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Import
+        </button>
+      </div>
+    </div>
+
+    <!-- Search Bar Real-Time -->
+    <div class="search-section">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" id="search-input" class="search-input" placeholder="Cari catatan secara instan..." oninput="handleSearch()" />
+    </div>
+
+    <!-- Filter Kategori -->
+    <div class="filter-section">
+      <span class="filter-label">Filter:</span>
+      <div class="filter-chips" id="filter-chips">
+        <!-- Chip filter dirender lewat JS -->
+      </div>
+    </div>
+
+    <!-- Daftar Catatan -->
+    <div class="notes-list" id="notes-list">
+      <!-- Item Note dirender lewat JS -->
+    </div>
+  </div>
+
+  <!-- Tombol Melayang Tambah Note (+) -->
+  <button class="fab" onclick="openNoteModal()" title="Tambah Catatan">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+  </button>
+
+  <!-- Modal Form Input/Edit Note -->
+  <div class="modal-overlay" id="note-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Tambah Catatan Baru</h3>
+        <button class="close-btn" onclick="closeNoteModal()">&times;</button>
+      </div>
+      
+      <input type="hidden" id="note-id" />
+      <input type="text" id="note-title" class="input-field" placeholder="Judul Catatan..." />
+
+      <!-- Text Formatting Toolbar -->
+      <div class="editor-toolbar">
+        <button class="editor-btn" onclick="applyFormat('bold')"><b>B</b></button>
+        <button class="editor-btn" onclick="applyFormat('italic')"><i>I</i></button>
+        <button class="editor-btn" onclick="applyFormat('strike')"><s>S</s></button>
+        <button class="editor-btn" onclick="applyFormat('list')">• List</button>
+      </div>
+
+      <textarea id="note-content" class="input-field" placeholder="Tulis isi catatan di sini..." oninput="updateWordCount()"></textarea>
+
+      <!-- Word & Character Counter -->
+      <div class="counter-text" id="counter-text">0 Kata | 0 Karakter</div>
+
+      <!-- Color Tagging Selector -->
+      <div class="color-picker-row">
+        <span class="color-picker-label">Warna:</span>
+        <div class="color-options">
+          <div class="color-circle selected" style="background: #e2e8f0;" onclick="selectColorTag('default', this)" title="Default"></div>
+          <div class="color-circle" style="background: #fef2f2;" onclick="selectColorTag('red', this)" title="Merah"></div>
+          <div class="color-circle" style="background: #fffbeb;" onclick="selectColorTag('yellow', this)" title="Kuning"></div>
+          <div class="color-circle" style="background: #f0fdf4;" onclick="selectColorTag('green', this)" title="Hijau"></div>
+          <div class="color-circle" style="background: #eff6ff;" onclick="selectColorTag('blue', this)" title="Biru"></div>
+          <div class="color-circle" style="background: #faf5ff;" onclick="selectColorTag('purple', this)" title="Ungu"></div>
+        </div>
+      </div>
+
+      <!-- Pilihan & Tambah Kategori -->
+      <div class="category-row">
+        <div class="category-input-wrapper">
+          <div class="custom-select-trigger" id="custom-select-trigger">
+            <span id="selected-category-text">Pilih Kategori (Opsional)</span>
+            <small style="color: var(--text-muted);">▼</small>
+          </div>
+          <div class="custom-dropdown-menu" id="custom-dropdown-menu">
+            <div id="dropdown-items-container"></div>
+          </div>
+        </div>
+        <button class="btn-inline-add" onclick="openCategoryModal()">+ Kategori</button>
+      </div>
+
+      <div class="form-buttons">
+        <button class="btn btn-cancel" onclick="closeNoteModal()">Batal</button>
+        <button class="btn btn-primary" id="save-btn" onclick="saveNote()">Simpan Catatan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Tambah Kategori Baru -->
+  <div class="modal-overlay" id="category-modal">
+    <div class="modal-card" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>Kategori Baru</h3>
+        <button class="close-btn" onclick="closeCategoryModal()">&times;</button>
+      </div>
+      
+      <input type="text" id="new-category-name" class="input-field" placeholder="Nama Kategori (misal: Kerja, Pribadi)..." />
+
+      <div class="form-buttons">
+        <button class="btn btn-cancel" onclick="closeCategoryModal()">Batal</button>
+        <button class="btn btn-primary" onclick="submitNewCategory()">Tambah</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi Hapus (Custom UI) -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-card" style="max-width: 420px; text-align: center;">
+      <div style="width: 56px; height: 56px; background: var(--danger-light); color: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+      </div>
+      <h3 style="font-size: 20px; font-weight: 700;">Hapus Catatan?</h3>
+      <p style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">Tindakan ini tidak dapat dibatalkan. Catatan kamu akan dihapus secara permanen.</p>
+      <div class="form-buttons" style="justify-content: center; margin-top: 10px;">
+        <button class="btn btn-cancel" onclick="closeConfirmModal()">Batal</button>
+        <button class="btn btn-danger" id="confirm-delete-btn">Ya, Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let notes = [];
+    let masterCategories = [];
+    let selectedCategory = "";
+    let activeFilter = "Semua";
+    let searchQuery = "";
+    let selectedColor = "default";
+    let noteIdToDelete = null;
+
+    // Inisialisasi awal
+    window.onload = function () {
+      const savedNotes = localStorage.getItem('app_notes');
+      const savedCategories = localStorage.getItem('app_categories');
+      const savedTheme = localStorage.getItem('app_theme');
+      
+      if (savedNotes) notes = JSON.parse(savedNotes);
+      if (savedCategories) masterCategories = JSON.parse(savedCategories);
+      if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        updateThemeIcon(true);
+      }
+
+      renderFilterChips();
+      renderNotes();
+      setupDropdownEvents();
+    };
+
+    function saveToLocalStorage() {
+      localStorage.setItem('app_notes', JSON.stringify(notes));
+      localStorage.setItem('app_categories', JSON.stringify(masterCategories));
+    }
+
+    /* Toggle Dark Mode */
+    function toggleDarkMode() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const isDark = currentTheme === 'dark';
+      
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('app_theme', 'light');
+        updateThemeIcon(false);
+        showToast('Mode Terang Aktif');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('app_theme', 'dark');
+        updateThemeIcon(true);
+        showToast('Mode Gelap Aktif');
+      }
+    }
+
+    function updateThemeIcon(isDark) {
+      const icon = document.getElementById('theme-icon');
+      if (isDark) {
+        icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+      } else {
+        icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+      }
+    }
+
+    /* Real-Time Search */
+    function handleSearch() {
+      searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+      renderNotes();
+    }
+
+    /* System Toast Notification */
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      let icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      if (type === 'danger') {
+        icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+      } else if (type === 'warning') {
+        icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+      }
+
+      toast.innerHTML = `${icon} <span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('hiding');
+        toast.addEventListener('animationend', () => toast.remove());
+      }, 3000);
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const pad = (num) => String(num).padStart(2, '0');
+      
+      const day = pad(date.getDate());
+      const month = pad(date.getMonth() + 1);
+      const year = date.getFullYear();
+      
+      const hours = pad(date.getHours());
+      const minutes = pad(date.getMinutes());
+      const seconds = pad(date.getSeconds());
+      
+      return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
+    }
+
+    // Modal Catatan Control
+    function openNoteModal(isEdit = false) {
+      document.getElementById('modal-title').innerText = isEdit ? 'Edit Catatan' : 'Tambah Catatan Baru';
+      document.getElementById('note-modal').classList.add('active');
+    }
+
+    function closeNoteModal() {
+      document.getElementById('note-modal').classList.remove('active');
+      resetForm();
+    }
+
+    // Modal Kategori Control
+    function openCategoryModal() {
+      document.getElementById('new-category-name').value = '';
+      document.getElementById('category-modal').classList.add('active');
+      document.getElementById('new-category-name').focus();
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('category-modal').classList.remove('active');
+    }
+
+    function submitNewCategory() {
+      const catInput = document.getElementById('new-category-name');
+      const catName = catInput.value.trim();
+
+      if (catName !== "") {
+        if (!masterCategories.includes(catName)) {
+          masterCategories.push(catName);
+          saveToLocalStorage();
+          renderFilterChips();
+          showToast(`Kategori "${catName}" ditambahkan`);
+        }
+        selectCategory(catName);
+        closeCategoryModal();
+      } else {
+        showToast("Nama kategori tidak boleh kosong!", "warning");
+      }
+    }
+
+    // Format & Counter Helpers
+    function applyFormat(type) {
+      const textarea = document.getElementById('note-content');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const selectedText = text.substring(start, end);
+
+      let formatted = "";
+      if (type === 'bold') formatted = `**${selectedText || 'Teks Tebal'}**`;
+      if (type === 'italic') formatted = `*${selectedText || 'Teks Miring'}*`;
+      if (type === 'strike') formatted = `~~${selectedText || 'Teks Coret'}~~`;
+      if (type === 'list') formatted = `\n• ${selectedText || 'Item list'}`;
+
+      textarea.value = text.substring(0, start) + formatted + text.substring(end);
+      textarea.focus();
+      updateWordCount();
+    }
+
+    function updateWordCount() {
+      const text = document.getElementById('note-content').value.trim();
+      const words = text ? text.split(/\s+/).length : 0;
+      const chars = text.length;
+      document.getElementById('counter-text').innerText = `${words} Kata | ${chars} Karakter`;
+    }
+
+    function selectColorTag(color, element) {
+      selectedColor = color;
+      document.querySelectorAll('.color-circle').forEach(el => el.classList.remove('selected'));
+      element.classList.add('selected');
+    }
+
+    // Custom Dropdown Menu Logic
+    function setupDropdownEvents() {
+      const trigger = document.getElementById('custom-select-trigger');
+      const menu = document.getElementById('custom-dropdown-menu');
+
+      trigger.addEventListener('click', () => {
+        menu.classList.toggle('show');
+        renderDropdownItems();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.category-input-wrapper')) {
+          menu.classList.remove('show');
+        }
+      });
+    }
+
+    function renderDropdownItems() {
+      const container = document.getElementById('dropdown-items-container');
+      container.innerHTML = '';
+
+      const noneItem = document.createElement('div');
+      noneItem.className = 'dropdown-item';
+      noneItem.innerText = '-- Tanpa Kategori --';
+      noneItem.onclick = () => selectCategory('');
+      container.appendChild(noneItem);
+
+      const allCategories = [...new Set([...masterCategories, ...notes.map(n => n.category).filter(Boolean)])];
+
+      allCategories.forEach(cat => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.innerText = cat;
+        item.onclick = () => selectCategory(cat);
+        container.appendChild(item);
+      });
+    }
+
+    function selectCategory(cat) {
+      selectedCategory = cat;
+      document.getElementById('selected-category-text').innerText = cat || "Pilih Kategori (Opsional)";
+      document.getElementById('custom-dropdown-menu').classList.remove('show');
+    }
+
+    // Operasi CRUD Note
+    function saveNote() {
+      const idInput = document.getElementById('note-id').value;
+      const title = document.getElementById('note-title').value.trim();
+      const content = document.getElementById('note-content').value.trim();
+      const now = new Date().toISOString();
+
+      if (!title && !content) {
+        showToast('Judul atau isi catatan tidak boleh kosong!', 'warning');
+        return;
+      }
+
+      if (idInput) {
+        const noteIndex = notes.findIndex(n => n.id === idInput);
+        if (noteIndex !== -1) {
+          notes[noteIndex].title = title;
+          notes[noteIndex].content = content;
+          notes[noteIndex].category = selectedCategory;
+          notes[noteIndex].color = selectedColor;
+          notes[noteIndex].lastEdited = now;
+          showToast('Catatan berhasil diperbarui');
+        }
+      } else {
+        const newNote = {
+          id: Date.now().toString(),
+          title: title,
+          content: content,
+          category: selectedCategory,
+          color: selectedColor || 'default',
+          isPinned: false,
+          lastEdited: now
+        };
+        notes.push(newNote);
+        showToast('Catatan baru ditambahkan');
+      }
+
+      saveToLocalStorage();
+      closeNoteModal();
+      renderFilterChips();
+      renderNotes();
+    }
+
+    function editNote(id) {
+      const note = notes.find(n => n.id === id);
+      if (!note) return;
+
+      document.getElementById('note-id').value = note.id;
+      document.getElementById('note-title').value = note.title;
+      document.getElementById('note-content').value = note.content;
+      selectCategory(note.category || '');
+
+      // Set Color Picked
+      const colorVal = note.color || 'default';
+      const colorCircles = document.querySelectorAll('.color-circle');
+      colorCircles.forEach(el => {
+        if (el.getAttribute('title').toLowerCase().includes(colorVal) || (colorVal === 'default' && el.getAttribute('title') === 'Default')) {
+          selectColorTag(colorVal, el);
+        }
+      });
+
+      updateWordCount();
+      openNoteModal(true);
+    }
+
+    // Custom Modal Delete Confirmation
+    function deleteNote(id) {
+      noteIdToDelete = id;
+      document.getElementById('confirm-modal').classList.add('active');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.remove('active');
+      noteIdToDelete = null;
+    }
+
+    document.getElementById('confirm-delete-btn').onclick = function() {
+      if (!noteIdToDelete) return;
+      
+      const cardEl = document.querySelector(`[data-id="${noteIdToDelete}"]`);
+      if (cardEl) {
+        cardEl.classList.add('deleting');
+        setTimeout(() => {
+          notes = notes.filter(n => n.id !== noteIdToDelete);
+          saveToLocalStorage();
+          renderFilterChips();
+          renderNotes();
+          showToast('Catatan berhasil dihapus', 'danger');
+          closeConfirmModal();
+        }, 250);
+      } else {
+        notes = notes.filter(n => n.id !== noteIdToDelete);
+        saveToLocalStorage();
+        renderFilterChips();
+        renderNotes();
+        showToast('Catatan berhasil dihapus', 'danger');
+        closeConfirmModal();
+      }
+    };
+
+    function togglePin(id) {
+      const note = notes.find(n => n.id === id);
+      if (note) {
+        note.isPinned = !note.isPinned;
+        saveToLocalStorage();
+        renderNotes();
+        showToast(note.isPinned ? 'Catatan dipin di atas' : 'Pin catatan dilepas', 'warning');
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('note-id').value = '';
+      document.getElementById('note-title').value = '';
+      document.getElementById('note-content').value = '';
+      selectCategory('');
+      selectColorTag('default', document.querySelectorAll('.color-circle')[0]);
+      updateWordCount();
+    }
+
+    // Export & Import Feature
+    function exportData() {
+      if (notes.length === 0 && masterCategories.length === 0) {
+        showToast("Tidak ada data untuk diexport", "warning");
+        return;
+      }
+
+      const payload = {
+        app: "CatatanPro",
+        version: "1.1",
+        exportedAt: new Date().toISOString(),
+        categories: masterCategories,
+        notes: notes
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `backup_catatan_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      showToast("Data catatan berhasil diexport!");
+    }
+
+    function triggerImport() {
+      document.getElementById('import-file-input').click();
+    }
+
+    function handleImportFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedData = JSON.parse(e.target.result);
+
+          if (!importedData.notes || !Array.isArray(importedData.notes)) {
+            throw new Error("Format file JSON tidak valid.");
+          }
+
+          if (importedData.categories && Array.isArray(importedData.categories)) {
+            masterCategories = [...new Set([...masterCategories, ...importedData.categories])];
+          }
+
+          const existingIds = new Set(notes.map(n => n.id));
+          let addedCount = 0;
+
+          importedData.notes.forEach(importedNote => {
+            if (!existingIds.has(importedNote.id)) {
+              notes.push(importedNote);
+              addedCount++;
+            }
+          });
+
+          saveToLocalStorage();
+          renderFilterChips();
+          renderNotes();
+          showToast(`Import berhasil! ${addedCount} catatan ditambahkan.`);
+        } catch (err) {
+          showToast("Gagal mengimport: Format file salah!", "danger");
+        }
+      };
+
+      reader.readAsText(file);
+      event.target.value = "";
+    }
+
+    // Render Filter Chips
+    function renderFilterChips() {
+      const container = document.getElementById('filter-chips');
+      container.innerHTML = '';
+
+      const allCategories = [...new Set([...masterCategories, ...notes.map(n => n.category).filter(Boolean)])];
+      const categories = ['Semua', 'Tanpa Kategori', ...allCategories];
+
+      categories.forEach(cat => {
+        const chip = document.createElement('div');
+        chip.className = `chip ${activeFilter === cat ? 'active' : ''}`;
+        chip.innerText = cat;
+        chip.onclick = () => {
+          activeFilter = cat;
+          renderFilterChips();
+          renderNotes();
+        };
+        container.appendChild(chip);
+      });
+
+      const addBtn = document.createElement('button');
+      addBtn.className = 'btn-add-cat-filter';
+      addBtn.innerText = '+ Kategori';
+      addBtn.onclick = openCategoryModal;
+      container.appendChild(addBtn);
+    }
+
+    // Helper Format Teks sederhana ke HTML
+    function parseFormattedText(text) {
+      if (!text) return '';
+      return text
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        .replace(/\*(.*?)\*/g, '<i>$1</i>')
+        .replace(/~~(.*?)~~/g, '<del>$1</del>');
+    }
+
+    // Render List Note
+    function renderNotes() {
+      const container = document.getElementById('notes-list');
+      container.innerHTML = '';
+
+      let filteredNotes = notes.filter(note => {
+        // Filter Kategori
+        let matchesCategory = true;
+        if (activeFilter === 'Tanpa Kategori') matchesCategory = !note.category;
+        else if (activeFilter !== 'Semua') matchesCategory = (note.category === activeFilter);
+
+        // Filter Pencarian
+        let matchesSearch = true;
+        if (searchQuery) {
+          const t = (note.title || '').toLowerCase();
+          const c = (note.content || '').toLowerCase();
+          matchesSearch = t.includes(searchQuery) || c.includes(searchQuery);
+        }
+
+        return matchesCategory && matchesSearch;
+      });
+
+      filteredNotes.sort((a, b) => {
+        if (a.isPinned !== b.isPinned) {
+          return b.isPinned ? 1 : -1;
+        }
+        return new Date(b.lastEdited) - new Date(a.lastEdited);
+      });
+
+      if (filteredNotes.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 50px 0;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 10px; opacity: 0.5;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <p>Tidak ada catatan yang ditemukan.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filteredNotes.forEach(note => {
+        const card = document.createElement('div');
+        const colorClass = note.color ? `color-${note.color}` : 'color-default';
+        card.className = `note-card ${colorClass} ${note.isPinned ? 'pinned' : ''}`;
+        card.setAttribute('data-id', note.id);
+
+        const categoryHTML = note.category 
+          ? `<span class="category-badge">${note.category}</span>` 
+          : '';
+
+        card.innerHTML = `
+          <div class="note-header">
+            <div class="note-title">${note.title || 'Tanpa Judul'}</div>
+          </div>
+          ${categoryHTML}
+          <div class="note-content">${parseFormattedText(note.content)}</div>
+          <div class="note-footer">
+            <div>Diubah: ${formatDate(note.lastEdited)}</div>
+            <div class="note-actions">
+              <button class="action-btn ${note.isPinned ? 'pin-active' : ''}" onclick="togglePin('${note.id}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="${note.isPinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                ${note.isPinned ? 'Pinned' : 'Pin'}
+              </button>
+              <button class="action-btn btn-edit" onclick="editNote('${note.id}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                Edit
+              </button>
+              <button class="action-btn btn-delete" onclick="deleteNote('${note.id}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                Hapus
+              </button>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
